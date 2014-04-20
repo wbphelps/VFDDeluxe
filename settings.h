@@ -84,6 +84,8 @@ extern uint8_t g_gps_updating;  // for signalling GPS update on some displays
 extern uint8_t g_DST_updated;  // DST update flag = allow update only once per day
 extern uint8_t g_has_dots; // can current shield show dot (decimal points)
 #ifdef HAVE_GPS 
+extern uint16_t g_gps_timer;  // to track GPS data timeout
+extern uint8_t g_gps_nosignal;  // to indicate GPS data timeout
 // debugging counters 
 extern uint8_t g_gps_cks_errors;  // gps checksum error counter
 extern uint8_t g_gps_parse_errors;  // gps parse error counter

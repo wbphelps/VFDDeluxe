@@ -45,8 +45,8 @@ volatile uint8_t gpsDataReady_;
 extern enum shield_t shield;
 
 //volatile uint8_t gpsEnabled = 0;
-#define gpsTimeoutLimit 5  // 5 seconds until we display the "no gps" message
-uint16_t gpsTimeout;  // how long since we received valid GPS data?
+//#define gpsTimeoutLimit 5  // 5 seconds until we display the "no gps" message
+//uint16_t gpsTimeout;  // how long since we received valid GPS data?
 time_t tLast = 0;  // for checking GPS messages
 
 extern WireRtcLib rtc;
@@ -200,7 +200,7 @@ void parseGPSdata(char *gpsBuffer) {
 			if (ptr == NULL) goto GPSerrorP;
 			gpsFixStat = ptr[0];
 			if (gpsFixStat == 'A') {  // if data valid, parse time & date
-				gpsTimeout = 0;  // reset gps timeout counter
+//				gpsTimeout = 0;  // reset gps timeout counter
 				for (uint8_t n=0; n<7; n++) { // skip 6 tokend, find date
 					ptr = ntok(ptr);  // Find the next token
 					if (ptr == NULL) goto GPSerrorP; // error if not found
@@ -229,7 +229,9 @@ void parseGPSdata(char *gpsBuffer) {
 //					if ((tm.Second == 0) || ((tNow - tGPSupdate)>=60)) {  // update RTC once/minute or if it's been 60 seconds
 					if (((tm.sec<5) && (tDelta>10)) || (tDelta>=60)) {  // update RTC once/minute or if it's been 60 seconds
 						//beep(1000, 1);  // debugging
-						g_gps_updating = true;
+						g_gps_updating = true;  // time is being set from GPS data
+						g_gps_nosignal = false; // reset no signal flag
+						g_gps_timer = 0; // reset GPS timeout counter
 						tGPSupdate = tNow;  // remember time of this update
 						tNow = tNow + (long)(settings.TZ_hour + settings.DST_offset) * SECS_PER_HOUR;  // add time zone hour offset & DST offset
 						if (settings.TZ_hour < 0)  // add or subtract time zone minute offset

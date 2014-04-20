@@ -30,6 +30,7 @@
  */
 
 /* DONE:
+ * add GPS data timeout indicator
  * 10 bit pwm for display brightness
  * fix bug: menu item "24H" sometimes not displayed
  * Implement brightness PWM
@@ -130,7 +131,9 @@ uint8_t g_second_dots_on = true;
 uint8_t g_alarm_switch;
 #define MENU_TIMEOUT 30 // 20*100 ms = 3 seconds
 #define SAVE_TIMEOUT 600 // 600*100 ms = 60 seconds
-
+#ifdef HAVE_GPS
+#define GPS_TIMEOUT 600 // if no GPS data for 60 seconds, flash something
+#endif
 uint8_t g_alarming = false;
 uint16_t snooze_count = 0; // alarm snooze counter
 uint16_t alarm_timer = 0; // how long has alarm been beeping?
@@ -300,7 +303,7 @@ void initialize(void)
 ISR( PCINT0_vect )
 {
     g_update_rtc = true;
-    g_gps_updating = false;
+//    g_gps_updating = false; // not sure why this is here...
 }
 #endif
 
@@ -987,9 +990,17 @@ void loop()
 
 #ifdef HAVE_GPS
 		if (settings.gps_enabled && g_menu_state == STATE_CLOCK) {
+			g_gps_timer++;
 			if (gpsDataReady()) {
 				parseGPSdata(gpsNMEA());  // get the GPS serial stream and possibly update the clock 
 			}
+			if (g_gps_timer > GPS_TIMEOUT)
+				if (g_gps_timer > GPS_TIMEOUT + 10) { // on for 1 second?
+					g_gps_timer -= 20; // back it up by 2 seconds so it flashes...
+					g_gps_nosignal = false;
+				}
+				else
+					g_gps_nosignal = true;  // set GPS no data received flag (for display)
 		}
 #endif
 

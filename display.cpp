@@ -1114,10 +1114,12 @@ void display_multiplex(void)
       case(SHIELD_IV6): {
 //          write_vfd_iv6(multiplex_counter, calculate_segments_7(d));
 					uint8_t seg = calculate_segments_7(d);
+#ifdef HAVE_GPS
 					if (multiplex_counter == 0) { // digit 0
-            if (g_gps_updating)
+            if (g_gps_updating || g_gps_nosignal)
 	            seg |= (1<<7); // DP is at bit 7
 					}
+#endif
 					if (multiplex_counter == 5) { // digit 5
 						if (g_alarm_switch)
 	            seg |= (1<<7); // DP is at bit 7
@@ -1128,10 +1130,14 @@ void display_multiplex(void)
       case(SHIELD_IV17): {
 //          uint16_t seg = calculate_segments_16(d);
           uint16_t seg = segments_16[d];
+#ifdef HAVE_GPS
           if (multiplex_counter == 0) {
             if (g_gps_updating)
-            seg |= ((1<<5)|(1<<4)|(1<<13)|(1<<14)|(1<<15));
+            seg |= ((1<<5)|(1<<4)|(1<<13)|(1<<14)|(1<<15));  // display "antenna" symbol
+            if (g_gps_nosignal)
+            seg |= (1<<13);  // indicate no GPS data ???
           }
+#endif
           write_vfd_iv17(multiplex_counter, seg);
           break;
       }
@@ -1143,8 +1149,10 @@ void display_multiplex(void)
           else { // show alarm switch & gps status
               if (g_alarm_switch)
                   seg |= (1<<7);
-              if (g_gps_updating)
+#ifdef HAVE_GPS
+              if (g_gps_updating || g_gps_nosignal)
                   seg |= (1<<6);
+#endif
               write_vfd_iv18(8, seg);
           }
           break;
